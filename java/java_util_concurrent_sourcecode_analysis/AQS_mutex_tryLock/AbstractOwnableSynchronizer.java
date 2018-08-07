@@ -1,0 +1,19 @@
+package com.sourcecode.locks;
+
+public class AbstractOwnableSynchronizer implements java.io.Serializable {
+	
+	private static final long serialVersionUID = 3737899427754241961L;
+	
+	protected AbstractOwnableSynchronizer(){}
+	//独占锁对应的线程
+	private transient Thread exclusiveOwnerThread;
+	
+	protected final void setExclusiveOwnerThread(Thread thread) {
+		this.exclusiveOwnerThread = thread;
+	}
+	
+	protected final Thread getExclusiveOwnerThread() {
+		return this.exclusiveOwnerThread;
+	}
+	
+}
