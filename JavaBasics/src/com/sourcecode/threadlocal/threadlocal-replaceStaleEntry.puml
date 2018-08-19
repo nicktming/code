@@ -1,0 +1,66 @@
+@startuml
+start
+-> key: 键,
+value: 值,
+staleSlot:在寻找key过程中遇到的第一个过期的节点;
+: slotToExpunge = staleSlot,
+ slotToExpunge 始终代表着整个run里面的第一个过期节点;
+note left
+run是两个空槽之间的一系列节点
+endnote
+partition 反向扫描寻找run中的第一个过期节点 {
+    : 取前一个素引i;
+    while (e = tab[i] 不为 null) is (是)
+        if (当前节点过期了?) then (是)
+            : 更新slotToExpunge为i;
+            note left
+                没有退出,而是继续在
+                整个run里面往前找
+            endnote
+        endif
+    endwhile
+}
+
+partition 前向扫描寻找key或者扫描完整个run {
+    : 取后一个素引i;
+    while (e = tab[i] 不为 null) is (是)
+        : 取出当前节点的k;
+        if (k == key) then (是)
+            : 替换该节点的值并且交换tab[i]和tab[staleSlot];
+                if (slotToExpunge == staleSlot) then (是)
+                    : 更新slotToExpunge为当前位置i;
+                    note left
+                        表明当前的i是整个run里面的
+                        第一个过期的元素节点
+                        更新一下slotToExpunge即可.
+                    endnote
+                endif
+            :cleanSomeSlots(expungeStaleEntry(slotToExpunge), len);
+            note left
+                从slotToExpunge开始清除.
+            endnote
+            stop
+        endif
+        if (k == null && slotToExpunge == staleSlot) then (是)
+            : 更新slotToExpunge为在扫描key时候遇到的第一个过期的节点下标;
+        endif
+    endwhile
+}
+: 根据key,value生成一个新的节点
+  放到位置staleSlot;
+  note left
+    表明搜索完整个run也没有找到key
+  endnote
+if (slotToExpunge != staleSlot) then (是)
+    : cleanSomeSlots(expungeStaleEntry(slotToExpunge), len);
+    floating note left
+        如果slotToExpunge等于staleSlot,
+        表明staleSlot是整个run里面的唯一一个过期元素
+        并且已经被填充了新的节点(key,value), 所以不需要做清除工作.
+        别的情况都需要做清除工作.
+    endnote
+
+endif
+stop
+
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+
+start
+-> 当前位置**i**和当前**table**数组存入的节点个数**size**;
+: 定义当前是否有删除过期节点removed为false;
+repeat
+: 获取下一个位置;
+if (当前节点不为空并且当前节点的key已经被垃圾回收器收集?) then (是)
+: 设置n为当前数组的长度并且设置删除标志removed为true;
+note left
+n和removed 发生了变化
+endnote
+partition expungeStaleEntry {
+: 删除当前节点并且尝试删除当前节点后续的过期节点和rehash;
+: 当前i下一个位置开始第一个为entry值为null的位置并赋值给i;
+}
+note left
+i 发生了变化
+endnote
+endif
+repeat while ((n >>>= 1) != 0)
+: return 是否有删除过期元素removed;
+stop
+
+@enduml

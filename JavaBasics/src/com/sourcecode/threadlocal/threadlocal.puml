@@ -1,0 +1,37 @@
+@startuml
+
+class ThreadLocalMap {
+    - int INITIAL_CAPACITY = 16
+    - Entry[] table
+    - int size = 0
+    - int threshold
+    - setThreshold(int len)
+    - nextIndex(int i, int len)
+    - prevIndex(int i, int len)
+     ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue)
+    - ThreadLocalMap(ThreadLocalMap parentMap)
+    - getEntry(ThreadLocal<?> key)
+    - getEntryAfterMiss(ThreadLocal<?> key, int i, Entry e)
+    - set(ThreadLocal<?> key, Object value)
+    - remove(ThreadLocal<?> key)
+    - replaceStaleEntry(ThreadLocal<?> key, Object value, int staleSlot)
+    - expungeStaleEntry(int staleSlot)
+    - cleanSomeSlots(int i, int n)
+    - rehash()
+    - resize()
+    - expungeStaleEntries()
+}
+
+class Entry {
+    + Object value
+    + Entry(ThreadLocal<?> k, Object v)
+}
+
+class WeakReference<ThreadLocal<?>>{
+    + WeakReference(T referent)
+    + WeakReference(T referent, ReferenceQueue<? super T> q)
+}
+
+WeakReference <|-- Entry
+ThreadLocalMap "1" *-- "many" Entry : contains
+@enduml

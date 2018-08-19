@@ -1,0 +1,13 @@
+@startuml
+start
+:foo1;
+note right
+This note is on several
+//lines// and can
+contain <b>HTML </b>
+====
+* Calling the method ""foo()"" is prohibited
+:foo2;
+end note
+stop
+@enduml

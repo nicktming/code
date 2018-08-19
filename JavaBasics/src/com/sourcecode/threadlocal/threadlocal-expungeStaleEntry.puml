@@ -1,0 +1,36 @@
+@startuml
+start
+-> 需要清除的位置staleSlot;
+: 清除该位置staleSlot的值并且size减1;
+: 定义stableSlot的下一个位置**i**作为起点;
+while (位置i为空) is (是)
+    : 取出当前位置对应的key;
+    if (key是null) then (是)
+        : 清除该位置的值;
+    else (不是)
+        partition rehash {
+            : 用hash计算出该key对应的h;
+            if (h 不等于 i) then (h != i)
+                : 清除当前位置;
+                note left
+                表示该接节点当时
+                存进来是有冲突的,
+                为了方便get的时候
+                可以快速定位,
+                把该节点放到该节点
+                真正hash到的
+                位置或者后面;
+                end note
+                note left: 找h的位置
+                while(tab[h] != null) is (是)
+                : h等于下一个位置;
+                endwhile (不是)
+
+                : 把当前位置i的值放到位置h;
+
+            endif;
+         }
+    endif;
+endwhile (return i);
+stop
+@enduml
