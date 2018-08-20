@@ -15,11 +15,8 @@ while (位置i为空) is (是)
                 note left
                 表示该接节点当时
                 存进来是有冲突的,
-                为了方便get的时候
-                可以快速定位,
-                把该节点放到该节点
-                真正hash到的
-                位置或者后面;
+                需要进行rehash,
+                **具体原因在代码注释段有.**
                 end note
                 note left: 找h的位置
                 while(tab[h] != null) is (是)

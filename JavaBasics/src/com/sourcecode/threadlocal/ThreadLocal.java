@@ -138,23 +138,37 @@ public class ThreadLocal<T> {
             }
         }
 
+        /**
+         * 作用:  先用hash定位寻找key,如果找到key 返回该节点
+         *       如果没有找到key 返回getEntryAfterMiss(key, i, e)的结果
+         */
         private Entry getEntry(ThreadLocal<?> key) {
-            int i = key.threadLocalHashCode & (table.length - 1);
+            int i = key.threadLocalHashCode & (table.length - 1); //计算hash值
             Entry e = table[i];
-            if (e != null && e.get() == key)
+            if (e != null && e.get() == key) // 如果命中
                 return e;
             else
                 return getEntryAfterMiss(key, i, e);
         }
 
+        /**
+         * 作用:  利用开发地址法寻找key,如果找到key 返回该节点
+         *       如果没有找到key 返回null
+         */
         private Entry getEntryAfterMiss(ThreadLocal<?> key, int i, Entry e) {
             Entry[] tab = table;
             int len = tab.length;
 
             while (e != null) {
                 ThreadLocal<?> k = e.get();
-                if (k == key)
+                if (k == key) //找到key存在的位置,直接返回节点
                     return e;
+                /**
+                 *  如果当前节点的key过期,则调用expungeStaleEntry(i)进行清理当前位置
+                 *  并且不接受返回值,i 没有发生变化
+                 *
+                 *  如果不过期则取下一个节点
+                 */
                 if (k == null)
                     expungeStaleEntry(i);
                 else
@@ -164,24 +178,32 @@ public class ThreadLocal<T> {
             return null;
         }
 
+        /**
+         * 作用: 将key和value 插入(如果key不存在)或者更新(如果key存在)
+         * @param key    键
+         * @param value  值
+         */
         private void set(ThreadLocal<?> key, Object value) {
 
             Entry[] tab = table;
             int len = tab.length;
             int i = key.threadLocalHashCode & (len-1);
-            System.out.format("%d & (%d - 1) = %d\n", key.threadLocalHashCode, len, i);
+            //System.out.format("%d & (%d - 1) = %d\n", key.threadLocalHashCode, len, i);
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
                 ThreadLocal<?> k = e.get();
-
+                // 如果key存在,则替换该值
                 if (k == key) {
                     e.value = value;
                     return;
                 }
+                /**
+                 * 如果当前k过期,则调用replaceStaleEntry方法
+                 * 无论key是否存在,都会保存在位置i,具体细节可以看replaceStaleEntry的注释
+                 */
 
                 if (k == null) {
-System.out.println("comes here because k == null");
                     replaceStaleEntry(key, value, i);
                     return;
                 }
@@ -189,20 +211,31 @@ System.out.println("comes here because k == null");
 
             tab[i] = new Entry(key, value);
             int sz = ++size;
+            /**
+             *  有限次去查找过期节点并删除过期节点,如果有删除则返回
+             *  如果没有删除则判断是否超过阀值
+             *  如果超过阀值则调用rehash函数.
+             */
             if (!cleanSomeSlots(i, sz) && sz >= threshold)
                 rehash();
         }
 
+        /**
+         *
+         * 作用: 删除key,调用了expungeStaleEntry(i)做清除和rehash工作,
+         *
+         * @param key 要删除的键值
+         */
         private void remove(ThreadLocal<?> key) {
             Entry[] tab = table;
             int len = tab.length;
-            int i = key.threadLocalHashCode & (len-1);
+            int i = key.threadLocalHashCode & (len-1); //获取hash值, 如果不在该位置则继续往下找直到遇到null
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
                 if (e.get() == key) {
                     e.clear();
-                    expungeStaleEntry(i);
+                    expungeStaleEntry(i); //做清除工作
                     return;
                 }
             }
@@ -295,6 +328,7 @@ System.out.println("comes here because k == null");
 
         /**
          *
+         * 作用: 从该索引staleSlot往下直到遇到null结束返回当前下标,遇到的过期元素tab[i]设置为null,遇到的正常节点做rehash.
          * @param staleSlot 需要清理的位置, 一个已经确定过期的位置
          * @return 返回从staleSlot位置开始第一个为entry值为null的位置
          */
@@ -329,6 +363,12 @@ System.out.println("comes here because k == null");
                 } else {
                     /**
                      *  因为处理冲突使用的开放地址法, 现在已经删除了一个位置,
+                     *  并且该节点前面的节点有可能为null,因为k==null的时候会把tab[i]=null,
+                     *  所以比如下次set操作对该key进行操作的时候就找不到该key,因为前面有null值,
+                     *  会认为该key不存在,重新创建一个新的节点,因此会造成有两个节点拥有同一个key.
+                     *
+                     *  所以需要进行rehash
+                     *
                      *  因此之前有些位置因为冲突没有存放到对应的hash值该有的位置,
                      *  所以下面的方法就是检查并且把此对象存到对应的hash值的位置或者它的后面.
                      */
@@ -372,14 +412,30 @@ System.out.println("comes here because k == null");
             return removed;
         }
 
+        /**
+         * 作用:
+         * 1. 先对整个数组的过期节点进行清除
+         * 2. 判断是否需要对数组进行扩展
+         */
         private void rehash() {
+            /**
+             * 先对整个数组的过期节点进行清除
+             */
             expungeStaleEntries();
 
-            // Use lower threshold for doubling to avoid hysteresis
+            /**
+             *  size >= 0.75 * threshold 则扩大容量
+             */
+
             if (size >= threshold - threshold / 4)
                 resize();
         }
 
+        /**
+         *  作用: 扩展数组
+         *  size扩大两倍, 每一个正常的元素做rehash映射到新的数组中
+         *  每一个过期的元素的value都设置为null方便gc
+         */
         private void resize() {
             Entry[] oldTab = table;
             int oldLen = oldTab.length;
@@ -408,6 +464,9 @@ System.out.println("comes here because k == null");
             table = newTab;
         }
 
+        /**
+         *  作用: 从头到尾扫描整个数组对所有过期节点做清理工作
+         */
         private void expungeStaleEntries() {
             Entry[] tab = table;
             int len = tab.length;

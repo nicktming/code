@@ -1,13 +1,52 @@
 @startuml
 start
-:foo1;
-note right
-This note is on several
-//lines// and can
-contain <b>HTML </b>
-====
-* Calling the method ""foo()"" is prohibited
-:foo2;
-end note
+-> key: 键
+vlaue:值;
+: 获得hash值下标i;
+while (e=tab[i] != null) then (是)
+    : 获取当前节点e的k;
+    if (k == key) then (是)
+        : 替换value;
+        note left
+            表示key之前有插入过,
+            更新值即可
+        endnote
+        stop
+    endif
+
+    if (k == null) then (是)
+        note left
+            表明在该位置已经过期
+        endnote
+        partition replaceStaleEntry {
+            : 无论该key是否存在都会把key,value放到该位置
+             如果key原先存在,则交换至此位置
+             如果key本来就不存在,则在此位置创建新节点
+             并且会做清除工作;
+            stop;
+        }
+    endif
+endwhile
+: 根据生成一个新的节点放到位置i并且size加1;
+note left
+    表明扫描过程
+    既没有出现过期元素也没有找到原有的key;
+    所以需要创建一个新的节点.
+endnote
+
+if (!cleanSomeSlot(i, size)) then (是)
+    note left
+        cleanSomeSlot 在有限的次数内去尝试删除一些过期节点.
+        1. 如果一个都没有删除则需要检查节点个数是否超过阀值
+        2. 如果删除了一个过期元素以上,程序可以直接退出,
+            因为没必要去做rehash
+    endnote
+    if (size >= threshold阀值) then (是)
+        partition rehash {
+            :做rehash操作;
+        }
+    endif
+endif
+
 stop
 @enduml

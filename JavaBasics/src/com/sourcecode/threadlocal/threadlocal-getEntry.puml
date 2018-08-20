@@ -1,0 +1,42 @@
+@startuml
+start
+-> key: 需要寻找的键;
+: 计算该key对应的hash值,也就是下标i,
+  并且取得当前节点e=table[i];
+if (当前节点不为null并且对应的键就是需要找的key?) then (是)
+    : 返回当前节点;
+    stop
+else (不是)
+    partition getEntryAfterMiss {
+        -> key: 需要寻找的key
+        i : 位置i
+        e : 当前节点;
+        while (当前节点e不是null?) is (是)
+            : 取出当前节点的键k = e.get();
+            if (k == key ?) then (是)
+                :返回当前节点;
+                note left
+                    找到该节点
+                endnote
+                stop
+            endif
+            if (k == null 当前元素是否过期?) then (是)
+                : 调用expungeStaleEntry(i);
+                note left
+                   对当前位置做清除工作
+                   注意没有接受返回值,
+                   **i没有发生变化**
+                endnote
+            else (不是)
+                : i 设为下一个索引;
+            endif
+            : 取出下一个节点e = tab[i];
+        endwhile
+    }
+endif
+: 返回null;
+note left
+    没有找到该key对应的节点
+endnote
+stop
+@enduml
