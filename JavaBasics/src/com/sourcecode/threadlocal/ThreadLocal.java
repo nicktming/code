@@ -6,7 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ThreadLocal<T> {
 	
 	public static void main(String[] args) {
-		ThreadLocal<Integer> [] tls = new ThreadLocal[9];
+        test_2();
+	}
+
+	public static void test_3() {
+        ThreadLocal<Integer> [] tls = new ThreadLocal[100000000];
         for (int i = 0; i < tls.length; i++) {
             tls[i] = new ThreadLocal<Integer>();
         }
@@ -14,14 +18,29 @@ public class ThreadLocal<T> {
         for (int i = 1; i < 9; i++) {
             map.set(tls[i], i);
         }
-        int hashcode = tls[4].threadLocalHashCode;
+        for (int i = 0; i < tls.length; i++) {
+            tls[i] = null;
+        }
+        while (true) {}
+    }
+
+	public static void test_2() {
+        ThreadLocal<Integer> [] tls = new ThreadLocal[9];
+        for (int i = 0; i < tls.length; i++) {
+            tls[i] = new ThreadLocal<Integer>();
+        }
+        ThreadLocalMap map = new ThreadLocalMap(tls[0], 0);
+        for (int i = 1; i < 9; i++) {
+            System.out.print("i = " + i + ", hash = ");
+            map.set(tls[i], i);
+        }
         map.printEntry();
         tls[4] = null;
         System.gc();
         //map.set(tls[4], 4);
         System.out.println("---------------------------------");
-		map.printEntry();
-	}
+        map.printEntry();
+    }
 	
 	public static void test_1() {
 		ThreadLocal<Integer> tl_1 = new ThreadLocal<>();
@@ -108,7 +127,7 @@ public class ThreadLocal<T> {
         ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
             table = new Entry[INITIAL_CAPACITY];
             int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
-            System.out.format("%d & (%d - 1) = %d\n", firstKey.threadLocalHashCode, INITIAL_CAPACITY, i);
+            System.out.format("i = 0, hash = %d & (%d - 1) = %d\n", firstKey.threadLocalHashCode, INITIAL_CAPACITY, i);
             table[i] = new Entry(firstKey, firstValue);
             size = 1;
             setThreshold(INITIAL_CAPACITY);
@@ -188,7 +207,7 @@ public class ThreadLocal<T> {
             Entry[] tab = table;
             int len = tab.length;
             int i = key.threadLocalHashCode & (len-1);
-            //System.out.format("%d & (%d - 1) = %d\n", key.threadLocalHashCode, len, i);
+            System.out.format("%d & (%d - 1) = %d\n", key.threadLocalHashCode, len, i);
             for (Entry e = tab[i];
                  e != null;
                  e = tab[i = nextIndex(i, len)]) {
