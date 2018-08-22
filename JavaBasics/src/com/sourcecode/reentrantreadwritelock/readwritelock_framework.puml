@@ -1,0 +1,29 @@
+@startuml
+
+interface ReadWriteLock {
+    Lock readLock();
+    Lock writeLock();
+}
+class ReentrantReadWriteLock
+class AbstractQueuedSynchronizer
+class Sync
+
+class FairSync
+class NonfairSync
+
+class ReadLock
+class WriteLock
+
+ReadWriteLock <|.. ReentrantReadWriteLock
+AbstractQueuedSynchronizer <|-- Sync
+Sync <|-- FairSync
+Sync <|-- NonfairSync
+
+Lock <|.. ReadLock
+Lock <|.. WriteLock
+
+ReentrantReadWriteLock *.. Sync
+Sync <.. ReadLock
+Sync <.. WriteLock
+
+@enduml
