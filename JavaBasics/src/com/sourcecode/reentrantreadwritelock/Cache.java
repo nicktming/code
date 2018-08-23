@@ -2,8 +2,6 @@ package com.sourcecode.reentrantreadwritelock;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.Lock;
 
 public class Cache {
     static Map<String, Object> map = new HashMap<String, Object>();
@@ -23,6 +21,8 @@ public class Cache {
     public static final Object put(String key, Object value) {
         w.lock();
         try {
+            System.out.println(Thread.currentThread().getName() + " gets lock.");
+            SleepUnit.sleep(10);
             return map.put(key, value);
         } finally {
             w.unlock();
@@ -37,4 +37,6 @@ public class Cache {
             w.unlock();
         }
     }
+
+
 }

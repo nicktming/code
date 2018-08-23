@@ -63,7 +63,7 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
         }
 		
 		public String toString() {
-			return "[" + (thread == null ? "NULL" : thread.getName()) + "," + waitStatus + "]";
+			return "[" + (thread == null ? "NULL" : (thread.getName() + "," +  (isShared() ? "共享" : "独占") )) + "," + waitStatus + "]";
 		}
 		
 	}
@@ -577,6 +577,38 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
         Node s;
         return h != t &&
             ((s = h.next) == null || s.thread != Thread.currentThread());
+    }
+
+    public final Collection<Thread> getSharedQueuedThreads() {
+        ArrayList<Thread> list = new ArrayList<Thread>();
+        for (Node p = tail; p != null; p = p.prev) {
+            if (p.isShared()) {
+                Thread t = p.thread;
+                if (t != null)
+                    list.add(t);
+            }
+        }
+        return list;
+    }
+
+    public final Collection<Thread> getExclusiveQueuedThreads() {
+        ArrayList<Thread> list = new ArrayList<Thread>();
+        for (Node p = tail; p != null; p = p.prev) {
+            if (!p.isShared()) {
+                Thread t = p.thread;
+                if (t != null)
+                    list.add(t);
+            }
+        }
+        return list;
+    }
+
+    final boolean apparentlyFirstQueuedIsExclusive() {
+        Node h, s;
+        return (h = head) != null &&
+                (s = h.next)  != null &&
+                !s.isShared()         &&
+                s.thread != null;
     }
 	
 	/**
