@@ -248,9 +248,24 @@ public class ReentrantReadWriteLock implements ReadWriteLock {
                 return -1;
             // 说明 1.写锁不存在 或者 2.写锁存在但是写锁持有者是当前线程
             int r = sharedCount(c);  // 获取读锁的个数
+
+            /**
+             *   1. 读锁不需要阻塞.
+             *   2. 读锁的总个数没有超过最大数.
+             *   3. 通过CAS设置c的状态 因为高16位是读锁的个数 所以需要加上1<<16.
+             */
             if (!readerShouldBlock() &&
                     r < MAX_COUNT &&
                     compareAndSetState(c, c + SHARED_UNIT)) {
+                /**
+                 *  上面三个条件都满足的情况下会进入这里继续执行
+                 *  1.  r == 0 意味着当前线程是第一个获得读锁的线程(之前没有获得过).
+                 *  2.  firstReader == current 意味当前线程是那个之前第一个获得读锁的线程 可以重入
+                 *  3.  如果都不是就说明当前线程不是第一个获得读锁的线程,因此当前线程最起码是第二个获得读锁的线程,
+                 *      a.  先去cachedHoldCounter看一下是不是上次获得读锁的线程,如果不是就把当前线程缓存起来
+                 *          (因为此时该线程是目前最后一个获得读锁的线程)
+                 *      b.  如果是
+                 */
                 if (r == 0) {
                     firstReader = current;
                     firstReaderHoldCount = 1;
@@ -447,6 +462,7 @@ public class ReentrantReadWriteLock implements ReadWriteLock {
 
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = -8159625535654395037L;
+        // 写锁永远不需要阻塞
         final boolean writerShouldBlock() {
             return false; // writers can always barge
         }
@@ -470,6 +486,7 @@ public class ReentrantReadWriteLock implements ReadWriteLock {
         final boolean readerShouldBlock() {
             return hasQueuedPredecessors();
         }
+        // 如果前面有节点 返回true 说明需要阻塞
     }
 
     /**
