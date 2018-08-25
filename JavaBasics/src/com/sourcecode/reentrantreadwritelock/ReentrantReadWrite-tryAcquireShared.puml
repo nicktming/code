@@ -1,0 +1,27 @@
+@startuml
+if (写锁存在或者写锁持有者不是当前线程) then (是)
+    : return -1;
+    note left
+        阻塞当前线程
+    endnote
+    stop;
+endif
+if (    读锁不需要阻塞
+    并且读锁的总个数没有超过最大值
+    并且CAS设置状态值) then (是)
+    if (读锁没有被获取过) then (是)
+        : 设置firstReader和firstReaderHoldCount;
+    else if (之前第一次获得读锁的线程是当前线程) then (是)
+        : 增加重入数firstReaderHoldCount;
+    else
+        : 获得当前线程对应的HoldCount rh;
+        : 增加重入数rh.count;
+    endif
+    :return 1;
+    note left
+        当前线程获得读锁
+    endnote
+    stop;
+endif
+partition fullTryAcquireShared(current)
+@enduml

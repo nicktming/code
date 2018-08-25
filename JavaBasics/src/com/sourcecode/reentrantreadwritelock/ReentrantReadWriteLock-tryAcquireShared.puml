@@ -1,0 +1,42 @@
+@startuml
+while (true) is (是)
+    if (存在写锁) then (是)
+        if (写锁持有者是当前线程) then (是)
+            :return -1;
+            note left
+                阻塞当前线程
+            endnote
+            stop;
+        endif
+    else if (当前线程需要阻塞) then (是)
+        partition 确认当前线程有没有之前获得过读锁 {
+            if(当前线程是第一次获得读锁的线程) then (是)
+            else
+                :寻找出当前线程的HoldCounter rh;
+                if (rh.count==0) then (是)
+                    :return -1;
+                    note left
+                        表明当前线程之前
+                        没有获得过读锁
+                        需要阻塞当前线程
+                    endnote
+                    stop;
+                endif
+            endif
+        }
+    endif
+    if (读锁的个数超过最大值) then (是)
+        :抛出error;
+        stop;
+    endif
+    if (CAS设置状态成功) then (是)
+        : 设置完变量;
+        : return 1;
+        note left
+            当前线程获得读锁
+        endnote
+        stop;
+    endif
+endwhile
+stop;
+@enduml
