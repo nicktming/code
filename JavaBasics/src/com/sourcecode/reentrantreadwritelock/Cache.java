@@ -12,8 +12,11 @@ public class Cache {
     public static final Object get(String key) {
         r.lock();
         try {
+            System.out.println(Thread.currentThread().getName() + " gets lock.");
+            SleepUnit.sleep(5);
             return map.get(key);
         } finally {
+            System.out.println(Thread.currentThread().getName() + " releases lock.");
             r.unlock();
         }
     }
@@ -25,6 +28,7 @@ public class Cache {
             SleepUnit.sleep(10);
             return map.put(key, value);
         } finally {
+            System.out.println(Thread.currentThread().getName() + " releases lock.");
             w.unlock();
         }
     }
@@ -37,6 +41,4 @@ public class Cache {
             w.unlock();
         }
     }
-
-
 }

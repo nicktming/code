@@ -1,0 +1,24 @@
+@startuml
+: 获取当前状态值c;
+if (c != 0) then(是)
+    if (存在写锁或者写锁不是当前线程) then (是)
+        : return false;
+        stop;
+    endif
+    if (写锁的个数超过最大值) then(是)
+        :抛出error;
+        stop;
+    endif
+    : 设置状态值并且return true;
+    note left
+        重入写锁
+    endnote
+    stop;
+endif
+if (写锁需要阻塞或者CAS设置状态不成功) then (是)
+    :return false;
+    stop;
+endif
+:设置获得写锁的线程是当前线程并且返回true;
+stop;
+@enduml
