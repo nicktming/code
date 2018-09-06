@@ -149,10 +149,6 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
         private static final int THROW_IE    = -1;
 
         /**
-         * Checks for interrupt, returning THROW_IE if interrupted
-         * before signalled, REINTERRUPT if after signalled, or
-         * 0 if not interrupted.
-         *
          * 检查中断
          * 返回THROW_IE       如果中断发生在被别的线程调用signal之前
          * 返回REINTERRUPT    如果中断发生在被别的线程调用signal之后
@@ -167,6 +163,7 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
         /**
          * Throws InterruptedException, reinterrupts current thread, or
          * does nothing, depending on mode.
+         * 判断是否需要抛出异常
          */
         private void reportInterruptAfterWait(int interruptMode)
                 throws InterruptedException {

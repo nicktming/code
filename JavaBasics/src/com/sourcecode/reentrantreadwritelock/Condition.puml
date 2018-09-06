@@ -1,0 +1,21 @@
+@startuml
+
+
+interface Condition {
+    void await() throws InterruptedException;
+    long awaitNanos(long nanosTimeout) throws InterruptedException;
+    boolean await(long time, TimeUnit unit) throws InterruptedException;
+    void awaitUninterruptibly();
+    boolean awaitUntil(Date deadline) throws InterruptedException;
+    void signal();
+    void signalAll();
+}
+
+class AbstractQueuedSynchronizer.ConditionObject implements Condition, java.io.Serializable {
+    private static final long serialVersionUID = 1173984872572414699L;
+    private transient Node firstWaiter;
+    private transient Node lastWaiter;
+}
+
+
+@enduml
