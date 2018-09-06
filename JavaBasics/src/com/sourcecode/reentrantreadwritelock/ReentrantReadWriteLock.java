@@ -5,7 +5,6 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 
 public class ReentrantReadWriteLock implements ReadWriteLock {
     private final ReentrantReadWriteLock.ReadLock readerLock;

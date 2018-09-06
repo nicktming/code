@@ -1,7 +1,6 @@
 package com.sourcecode.reentrantreadwritelock;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
 
 public interface Lock {
 	// 获取锁
@@ -14,6 +13,7 @@ public interface Lock {
 	boolean tryLock(long time, TimeUnit unit) throws InterruptedException;
 	// 释放锁
 	void unlock();
+
 	// 后续博客会讨论
 	Condition newCondition();
 	
