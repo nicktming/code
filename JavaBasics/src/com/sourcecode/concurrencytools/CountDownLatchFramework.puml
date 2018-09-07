@@ -1,0 +1,23 @@
+@startuml
+
+class CountDownLatch {
+    private final Sync sync;
+    public CountDownLatch(int count)
+    public void await() throws InterruptedException
+    public boolean await(long timeout, TimeUnit unit) throws InterruptedException
+    public void countDown()
+    public String toString()
+}
+
+class Sync extends AbstractQueuedSynchronizer {
+        private static final long serialVersionUID = 4982264981922014374L;
+        Sync(int count)
+        int getCount()
+        int tryAcquireShared(int acquires)
+        protected boolean tryReleaseShared(int releases)
+}
+
+Sync <-- CountDownLatch
+
+
+@enduml

@@ -843,7 +843,7 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
         Node h = head;  // 记录一下旧的头节点
         setHead(node);  // 将当前节点设置为头节点
         /** 
-         * 如果propagate > 0 说明锁还没有被别的线程拿到
+         * 如果propagate > 0 说明锁还可以被别的线程拿到
          */
         if (propagate > 0 || h == null || h.waitStatus < 0 ||
             (h = head) == null || h.waitStatus < 0) {
