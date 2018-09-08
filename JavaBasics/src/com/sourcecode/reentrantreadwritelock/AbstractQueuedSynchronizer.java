@@ -97,6 +97,34 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
 
         public ConditionObject() {}
 
+        public final long awaitNanos(long nanosTimeout)
+                throws InterruptedException {
+            if (Thread.interrupted())
+                throw new InterruptedException();
+            Node node = addConditionWaiter();
+            long savedState = fullyRelease(node);
+            final long deadline = System.nanoTime() + nanosTimeout;
+            int interruptMode = 0;
+            while (!isOnSyncQueue(node)) {
+                if (nanosTimeout <= 0L) {
+                    transferAfterCancelledWait(node);
+                    break;
+                }
+                if (nanosTimeout >= spinForTimeoutThreshold)
+                    LockSupport.parkNanos(this, nanosTimeout);
+                if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+                    break;
+                nanosTimeout = deadline - System.nanoTime();
+            }
+            if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
+                interruptMode = REINTERRUPT;
+            if (node.nextWaiter != null)
+                unlinkCancelledWaiters();
+            if (interruptMode != 0)
+                reportInterruptAfterWait(interruptMode);
+            return deadline - System.nanoTime();
+        }
+
 
         /**
          * Implements interruptible condition wait.
@@ -507,7 +535,7 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
 	 * 添加tryAcquire(int arg) 方法
 	 */
 	
-	protected boolean tryAcquire(int arg) {
+	protected boolean tryAcquire(long arg) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -522,7 +550,7 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
 	 * @return 返回是否需要对当前运行线程进行中断
 	 */
 	
-	final boolean acquireQueued(final Node node, int arg) {
+	final boolean acquireQueued(final Node node, long arg) {
         boolean failed = true;
         try {
             boolean interrupted = false;

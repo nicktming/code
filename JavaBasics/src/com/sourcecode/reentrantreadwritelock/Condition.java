@@ -9,7 +9,7 @@ public interface Condition {
      */
     void await() throws InterruptedException;
 
-    //long awaitNanos(long nanosTimeout) throws InterruptedException;
+    long awaitNanos(long nanosTimeout) throws InterruptedException;
 
     //boolean await(long time, TimeUnit unit) throws InterruptedException;
 
