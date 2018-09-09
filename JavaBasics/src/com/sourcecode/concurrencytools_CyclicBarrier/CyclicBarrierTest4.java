@@ -2,17 +2,14 @@ package com.sourcecode.concurrencytools_CyclicBarrier;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-public class CyclicBarrierTest3 {
-    static CyclicBarrier c = new CyclicBarrier(2);
+public class CyclicBarrierTest4 {
+    static CyclicBarrier c = new CyclicBarrier(5);
     public static void main(String[] args) throws InterruptedException, BrokenBarrierException {
-        Thread thread = new MyThread();
-        thread.start();
-        thread.interrupt();
-        try {
-            c.await();
-        } catch (Exception e) {
-            System.out.println(Thread.currentThread().getName() + "------>" + c.isBroken() + ", interrupted status:" + Thread.currentThread().isInterrupted());
+        for (int i = 0; i < 5; i++) {
+            Thread thread = new MyThread();
+            thread.start();
         }
+        System.out.println(Thread.currentThread().getName() + "------>finishes!");
     }
 
     static class MyThread extends Thread {

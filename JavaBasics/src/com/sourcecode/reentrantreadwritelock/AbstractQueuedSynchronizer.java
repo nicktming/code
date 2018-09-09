@@ -161,7 +161,7 @@ public class AbstractQueuedSynchronizer extends AbstractOwnableSynchronizer
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
                     break;
             }
-            System.out.println("in await() after while interrupteMode:" + interruptMode);
+            //System.out.println("in await() after while interrupteMode:" + interruptMode);
             // 尝试获得锁, 参数为之前释放锁的个数(在重入锁中可以理解为重入的次数)
             // acquireQueued(node, savedState) 返回true表示在获得锁的过程中线程有中断过
             if (acquireQueued(node, savedState) && interruptMode != THROW_IE)

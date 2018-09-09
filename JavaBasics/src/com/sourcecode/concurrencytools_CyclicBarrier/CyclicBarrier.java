@@ -1,27 +1,27 @@
 package com.sourcecode.concurrencytools_CyclicBarrier;
 
-import com.sourcecode.reentrantreadwritelock.Condition;
-import com.sourcecode.reentrantreadwritelock.ReentrantLock;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CyclicBarrier {
     private static class Generation {
         boolean broken = false;
     }
-    /** The lock for guarding barrier entry */
+    /** 重入锁 */
     private final ReentrantLock lock = new ReentrantLock();
-    /** Condition to wait on until tripped */
+    /** 一个lock对象的Condition实例 */
     private final Condition trip = lock.newCondition();
-    /** The number of parties */
+    /** 拦截线程的总个数 */
     private final int parties;
-    /* The command to run when tripped */
+    /** The command to run when tripped */
     private final Runnable barrierCommand;
     /** The current generation */
     private Generation generation = new Generation();
-
+    /** 拦截线程的剩余需要数量 */
     private int count;
 
     public CyclicBarrier(int parties) {
@@ -46,9 +46,14 @@ public class CyclicBarrier {
     private int dowait(boolean timed, long nanos)
             throws InterruptedException, BrokenBarrierException,
             TimeoutException {
+        // 获取重入锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+
+            System.out.println(Thread.currentThread().getName() + " get locks.");
+
+            // 获得
             final Generation g = generation;
 
             if (g.broken)
@@ -106,6 +111,7 @@ public class CyclicBarrier {
                 }
             }
         } finally {
+            System.out.println(Thread.currentThread().getName() + " release locks.");
             lock.unlock();
         }
     }
