@@ -1,7 +1,7 @@
 @startuml
 
 class CyclicBarrier {
-        lock ReentrantLock;
+        lock : ReentrantLock;
         trip : Condition;
         parties : int
         barrierCommand:Runnable

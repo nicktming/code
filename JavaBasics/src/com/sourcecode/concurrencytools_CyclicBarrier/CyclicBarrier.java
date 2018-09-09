@@ -1,7 +1,6 @@
 package com.sourcecode.concurrencytools_CyclicBarrier;
 
 
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
@@ -48,33 +47,38 @@ public class CyclicBarrier {
             TimeoutException {
         // 获取重入锁
         final ReentrantLock lock = this.lock;
+        // 尝试获取锁
         lock.lock();
         try {
 
-            System.out.println(Thread.currentThread().getName() + " get locks.");
+            //System.out.println(Thread.currentThread().getName() + " get locks.");
 
-            // 获得
+            // 获得当前代
             final Generation g = generation;
 
+            // 如果有线程中断
             if (g.broken)
                 throw new BrokenBarrierException();
 
+            // 如果当前线程被中断
             if (Thread.interrupted()) {
                 breakBarrier();
                 throw new InterruptedException();
             }
 
             int index = --count;
-            if (index == 0) {  // tripped
+            //System.out.format("index=%d\n", index);
+            if (index == 0) {  // 最后一个到达屏障的线程
                 boolean ranAction = false;
                 try {
                     final Runnable command = barrierCommand;
                     if (command != null)
                         command.run();
                     ranAction = true;
-                    nextGeneration();
+                    nextGeneration(); //更新下一代
                     return 0;
                 } finally {
+                    // 如果执行command.run发生异常,则breakBarrier
                     if (!ranAction)
                         breakBarrier();
                 }
@@ -88,6 +92,7 @@ public class CyclicBarrier {
                     else if (nanos > 0L)
                         nanos = trip.awaitNanos(nanos);
                 } catch (InterruptedException ie) {
+                    // 如果等待过程中有被线程中断
                     if (g == generation && ! g.broken) {
                         breakBarrier();
                         throw ie;
@@ -111,7 +116,7 @@ public class CyclicBarrier {
                 }
             }
         } finally {
-            System.out.println(Thread.currentThread().getName() + " release locks.");
+            //System.out.println(Thread.currentThread().getName() + " release locks.");
             lock.unlock();
         }
     }
@@ -123,12 +128,24 @@ public class CyclicBarrier {
         return dowait(true, unit.toNanos(timeout));
     }
 
+    /**
+     *  break the current generation
+     *  1. broken设置为true
+     *  2. count 重新设置为parties
+     *  3. 唤醒所有线程
+     */
     private void breakBarrier() {
         generation.broken = true;
         count = parties;
         trip.signalAll();
     }
 
+    /**
+     *  start a new generation
+     *  1. 唤醒所有等待中的线程
+     *  2. count 重新设置为parties
+     *  3. generation 设置成一个新的Generation对象
+     */
     private void nextGeneration() {
         // signal completion of last generation
         trip.signalAll();
