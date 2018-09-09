@@ -1,0 +1,27 @@
+@startuml
+
+class CyclicBarrier {
+        lock ReentrantLock;
+        trip : Condition;
+        parties : int
+        barrierCommand:Runnable
+        generation : Generation
+        count : int
+}
+
+class ReentrantLock {
+}
+
+interface Condition {
+}
+
+class Generation {
+    broke : boolean
+}
+
+CyclicBarrier o-- "1" ReentrantLock
+CyclicBarrier o-- "1" Condition
+CyclicBarrier +-- Generation
+
+
+@enduml
