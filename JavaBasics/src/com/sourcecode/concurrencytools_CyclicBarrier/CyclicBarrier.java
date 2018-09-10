@@ -42,6 +42,14 @@ public class CyclicBarrier {
         }
     }
 
+    /**
+     * @param timed 是否需要超时
+     * @param nanos 时长
+     * @return 返回还需要等待多少个线程才可以到达屏障
+     * @throws InterruptedException 当前线程中断
+     * @throws BrokenBarrierException 有其他线程中断或者其他线程超时
+     * @throws TimeoutException 当前线程等待超时
+     */
     private int dowait(boolean timed, long nanos)
             throws InterruptedException, BrokenBarrierException,
             TimeoutException {
@@ -56,7 +64,7 @@ public class CyclicBarrier {
             // 获得当前代
             final Generation g = generation;
 
-            // 如果有线程中断
+            // 如果有线程中断或者超时
             if (g.broken)
                 throw new BrokenBarrierException();
 
@@ -104,18 +112,23 @@ public class CyclicBarrier {
                     }
                 }
 
+                // 如果当代的broken为true,表明有线程被中断
                 if (g.broken)
                     throw new BrokenBarrierException();
 
+                // 如果换代了 表示可以返回了
                 if (g != generation)
                     return index;
 
+                // 如果超时则先break the current generation
+                // 再抛出超时异常
                 if (timed && nanos <= 0L) {
                     breakBarrier();
                     throw new TimeoutException();
                 }
             }
         } finally {
+            // 释放锁
             //System.out.println(Thread.currentThread().getName() + " release locks.");
             lock.unlock();
         }
@@ -180,6 +193,9 @@ public class CyclicBarrier {
         }
     }
 
+    /**
+     * @return 当前代是否被破坏, 被破坏的两种情况, 某个线程中断或者等待超时
+     */
     public boolean isBroken() {
         final ReentrantLock lock = this.lock;
         lock.lock();

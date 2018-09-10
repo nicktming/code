@@ -23,7 +23,7 @@ public class CyclicBarrierTest5 {
                 c.await(1, TimeUnit.SECONDS);
                 //c.await();
             } catch (Exception e) {
-                //System.out.println(Thread.currentThread().getName() + "---->" + e);
+                System.out.println(Thread.currentThread().getName() + "---->" + e);
                 //System.out.println(Thread.currentThread().getName() + "------>" + c.isBroken() + ", interrupted status:" + Thread.currentThread().isInterrupted());
             } finally {
                 System.out.println(Thread.currentThread().getName() + " finishes!");

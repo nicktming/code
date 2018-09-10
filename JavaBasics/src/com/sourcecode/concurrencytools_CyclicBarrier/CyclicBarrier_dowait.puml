@@ -1,0 +1,62 @@
+@startuml
+start
+:final ReentrantLock lock = this.lock;
+: 尝试获取锁lock.lock();
+: 获得当前代final Generation g = generation;
+if (g.broken当前代被破坏) then (是)
+    : 释放锁抛出BrokenBarrierException;
+    stop
+endif
+if (Thread.interrupted()当前线程被中断) then (是)
+    : 调用breakBarrier破坏当前代;
+    : 释放锁抛出InterruptedException;
+    stop
+endif
+: 获取剩余需要到达屏障的线程数index=--count;
+if (index == 0) then(是)
+    if (执行barrierCommand) then (发生异常)
+    : 如果执行barrierCommand
+      **发生异常(肯定是运行时异常)**
+      则调用breakBarrier破坏当前代.
+      **并且会释放锁后抛出该异常**;
+      stop;
+    else(不发生异常)
+    : 如果不发生异常,会调用
+      nextGeneration()产生新一代;
+    endif
+endif
+repeat
+: 尝试等待如果有时间限制就会调用超时等待方法;
+note left
+    调用Condition接口的等待方法
+    会让该线程失去锁
+endnote
+if (在等待过程中有中断异常发生) then (是)
+    if (还是当前代并且没有被破坏) then (是)
+        : 调用breakBarrier破坏当前代.;
+        : 释放锁抛出该异常ie;
+        note left
+            即使是等待过程中发生中断异常
+            也是再次获得锁后来抛出这个异常
+            所以还是会进入到finally块中是否锁
+        endnote
+    else (不是)
+        : 设置一下当前线程状态;
+    endif
+endif
+if (如果当前代被破坏) then(是)
+    :释放锁后抛出BrokenBarrierException;
+    stop
+endif
+if (如果换代了) then(是)
+    :释放锁后返回还需要多少线程才可以到达屏障;
+    stop
+endif
+if (如果设置了超时等待并且已经超时) then(是)
+    :调用breakBarrier破坏当前代
+    :释放锁后抛出TimeoutException异常;
+    stop
+endif
+repeat while ()
+stop
+@enduml
