@@ -1,0 +1,35 @@
+@startuml
+
+class Semaphore implements java.io.Serializable {
+    sync : Sync
+    void acquire() throws InterruptedException
+    void acquireUninterruptibly()
+    boolean tryAcquire()
+    boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException
+    void release()
+    void acquire(int permits) throws InterruptedException
+    void acquireUninterruptibly(int permits)
+    boolean tryAcquire(int permits)
+    boolean tryAcquire(int permits, long timeout, TimeUnit unit) throws InterruptedException
+    void release(int permits)
+    int availablePermits()
+    int drainPermits()
+    void reducePermits(int reduction)
+    boolean isFair()
+    boolean hasQueuedThreads()
+    int getQueueLength()
+    Collection<Thread> getQueuedThreads()
+    String toString()
+}
+
+abstract class Sync extends AbstractQueuedSynchronizer {
+}
+
+class NonfairSync extends Sync {
+}
+
+class FairSync extends Sync {
+}
+
+Semaphore +-- "1" Sync
+@enduml
