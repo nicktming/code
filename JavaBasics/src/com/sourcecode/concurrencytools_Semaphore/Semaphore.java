@@ -1,24 +1,26 @@
 package com.sourcecode.concurrencytools_Semaphore;
 
 import com.sourcecode.reentrantreadwritelock.AbstractQueuedSynchronizer;
-
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 public class Semaphore implements java.io.Serializable {
     private static final long serialVersionUID = -3222578661600680210L;
-    private final Sync sync;
+
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = 1192457210091910933L;
-
+        // 初始化当前AQS状态
         Sync(int permits) {
             setState(permits);
         }
-
+        // 返回当前AQS状态
         final int getPermits() {
             return getState();
         }
 
+        // 返回不公平机制下获得共享锁
+        // 返回值小于0       表示没有获得锁
+        // 返回值大于等于0    表明获得锁
         final int nonfairTryAcquireShared(int acquires) {
             for (;;) {
                 int available = getState();
@@ -29,6 +31,7 @@ public class Semaphore implements java.io.Serializable {
             }
         }
 
+        // 释放共享锁 释放的个数releases
         protected final boolean tryReleaseShared(int releases) {
             for (;;) {
                 int current = getState();
@@ -40,6 +43,7 @@ public class Semaphore implements java.io.Serializable {
             }
         }
 
+        // 减少许可数量reductions
         final void reducePermits(int reductions) {
             for (;;) {
                 int current = getState();
@@ -51,6 +55,8 @@ public class Semaphore implements java.io.Serializable {
             }
         }
 
+        // 将许可数量减为0
+        // 返回值是减少的数量
         final int drainPermits() {
             for (;;) {
                 int current = getState();
@@ -60,6 +66,8 @@ public class Semaphore implements java.io.Serializable {
         }
     }
 
+
+    // 非公平锁
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = -2694183684443567898L;
 
@@ -72,6 +80,7 @@ public class Semaphore implements java.io.Serializable {
         }
     }
 
+    // 公平锁
     static final class FairSync extends Sync {
         private static final long serialVersionUID = 2014338818796000944L;
 
@@ -79,8 +88,11 @@ public class Semaphore implements java.io.Serializable {
             super(permits);
         }
 
+        // 返回值小于0 表示没有获得锁
+        // 返回值大于等于0 表示获得锁
         protected int tryAcquireShared(int acquires) {
             for (;;) {
+                // 如果有前驱节点 保持公平机制 返回一个负数
                 if (hasQueuedPredecessors())
                     return -1;
                 int available = getState();
@@ -91,6 +103,8 @@ public class Semaphore implements java.io.Serializable {
             }
         }
     }
+
+    private final Sync sync;
 
     public Semaphore(int permits) {
         sync = new NonfairSync(permits);

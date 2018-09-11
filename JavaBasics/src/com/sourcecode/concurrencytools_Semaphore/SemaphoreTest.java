@@ -1,51 +1,43 @@
 package com.sourcecode.concurrencytools_Semaphore;
 
-//import java.util.concurrent.Semaphore;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class SemaphoreTest {
-    static class Parking {
-
-        //信号量
-        private Semaphore semaphore;
-
-        Parking(int count) {
-            semaphore = new Semaphore(count);
+    static Random random = new Random();
+    static class ParkingLot {
+        Semaphore semaphore;
+        ParkingLot(int size) {
+            semaphore = new Semaphore(size);
         }
-
         public void park() {
             try {
-                //获取信号量
                 semaphore.acquire();
-                long time = (long) (Math.random() * 10);
-                System.out.println(Thread.currentThread().getName() + "进入停车场，停车" + time + "秒..." );
-                Thread.sleep(time);
-                System.out.println(Thread.currentThread().getName() + "开出停车场...");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
+                int waitTime = random.nextInt(10);
+                System.out.println(Thread.currentThread().getName() + " parks, it takes " + waitTime + " seconds.");
+                TimeUnit.SECONDS.sleep(waitTime);
+                System.out.println(Thread.currentThread().getName() + " leaves.");
                 semaphore.release();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
 
-
     static class Car extends Thread {
-        Parking parking ;
-
-        Car(Parking parking){
-            this.parking = parking;
+        ParkingLot parkingLot;
+        public Car(ParkingLot parkingLot) {
+            this.parkingLot = parkingLot;
         }
-
-        @Override
         public void run() {
-            parking.park();     //进入停车场
+            this.parkingLot.park();
         }
     }
 
     public static void main(String[] args){
-        Parking parking = new Parking(3);
-
-        for(int i = 0 ; i < 5 ; i++){
+        ParkingLot parking = new ParkingLot(3);
+        for(int i = 0 ; i < 6 ; i++){
             new Car(parking).start();
         }
     }
