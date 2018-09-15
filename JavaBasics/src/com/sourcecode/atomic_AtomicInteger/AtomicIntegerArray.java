@@ -35,7 +35,7 @@ public class AtomicIntegerArray implements java.io.Serializable {
         shift = 31 - Integer.numberOfLeadingZeros(scale);
     }
 
-
+    // 计算出对应下标的offset
     private long checkedByteOffset(int i) {
         if (i < 0 || i >= array.length)
             throw new IndexOutOfBoundsException("index " + i);
@@ -54,8 +54,8 @@ public class AtomicIntegerArray implements java.io.Serializable {
     public AtomicIntegerArray(int[] array) {
         // Visibility guaranteed by final field guarantees
         this.array = array.clone();
-        System.out.println("this.array:" + this.array);
-        System.out.println("origin array:" + array);
+        //System.out.println("this.array:" + this.array);
+        //System.out.println("origin array:" + array);
     }
 
     public final int length() {
@@ -70,10 +70,23 @@ public class AtomicIntegerArray implements java.io.Serializable {
         return unsafe.getIntVolatile(array, offset);
     }
 
+    /**
+     * Sets the element at position {@code i} to the given value.
+     *
+     * @param i the index
+     * @param newValue the new value
+     */
     public final void set(int i, int newValue) {
         unsafe.putIntVolatile(array, checkedByteOffset(i), newValue);
     }
 
+    /**
+     * Eventually sets the element at position {@code i} to the given value.
+     *
+     * @param i the index
+     * @param newValue the new value
+     * @since 1.6
+     */
     public final void lazySet(int i, int newValue) {
         unsafe.putOrderedInt(array, checkedByteOffset(i), newValue);
     }
@@ -81,7 +94,10 @@ public class AtomicIntegerArray implements java.io.Serializable {
     public final int getAndSet(int i, int newValue) {
         return unsafe.getAndSetInt(array, checkedByteOffset(i), newValue);
     }
-
+    /**
+     * Atomically sets the element at position {@code i} to the given
+     * updated value if the current value {@code ==} the expected value.
+     */
     public final boolean compareAndSet(int i, int expect, int update) {
         return compareAndSetRaw(checkedByteOffset(i), expect, update);
     }
