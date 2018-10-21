@@ -201,20 +201,14 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
                 if (p.casNext(null, newNode)) {
                     // 如果CAS成功
 
-                    if (p != t) // hop two nodes at a time
-                        casTail(t, newNode);  // Failure is OK.
+                    if (p != t)
+                        casTail(t, newNode);
                     return true;
                 }
-                // Lost CAS race to another thread; re-read next
             }
             else if (p == q)
-                // We have fallen off list.  If tail is unchanged, it
-                // will also be off-list, in which case we need to
-                // jump to head, from which all live nodes are always
-                // reachable.  Else the new tail is a better bet.
                 p = (t != (t = tail)) ? t : head;
             else
-                // Check for tail updates after two hops.
                 p = (p != t && t != (t = tail)) ? t : q;
         }
     }
