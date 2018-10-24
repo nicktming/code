@@ -672,7 +672,7 @@ public class LinkedBlockingDeque<E>
         }
     }
 
-    // 阻塞队列的一个方法
+    // 阻塞队列的方法
 
     // BlockingQueue methods
 
@@ -699,6 +699,10 @@ public class LinkedBlockingDeque<E>
     }
 
     /**
+     * 调用blockingDeque的尾部加入方法
+     * 有两种情况会加入不成功:
+     * 1. e为null 抛出运行时异常NullPointerException
+     * 2. 线程休眠过程中被别的线程中断 抛出InterruptedException异常
      * @throws NullPointerException {@inheritDoc}
      * @throws InterruptedException {@inheritDoc}
      */
@@ -733,6 +737,12 @@ public class LinkedBlockingDeque<E>
         return pollFirst();
     }
 
+    /**
+     * 调用blockingDeque的头部消费方法
+     * 在等待的过程中如果该线程被其他的线程中断 则抛出InterruptedException异常
+     * @return
+     * @throws InterruptedException
+     */
     public E take() throws InterruptedException {
         return takeFirst();
     }
@@ -1096,24 +1106,21 @@ public class LinkedBlockingDeque<E>
      */
     private abstract class AbstractItr implements Iterator<E> {
         /**
-         * The next node to return in next()
+         * 在next()中要返回的节点
          */
         Node<E> next;
 
         /**
-         * nextItem holds on to item fields because once we claim that
-         * an element exists in hasNext(), we must return item read
-         * under lock (in advance()) even if it was in the process of
-         * being removed when hasNext() was called.
+         * 在next()中要返回的元素
          */
         E nextItem;
 
         /**
-         * Node returned by most recent call to next. Needed by remove.
-         * Reset to null if this element is deleted by a call to remove.
+         * 调用remove方法删除的就是该lastRet节点 (上一个被返回的节点)
          */
         private Node<E> lastRet;
 
+        // 留给子类实现
         abstract Node<E> firstNode();
         abstract Node<E> nextNode(Node<E> n);
 
@@ -1122,6 +1129,7 @@ public class LinkedBlockingDeque<E>
             final ReentrantLock lock = LinkedBlockingDeque.this.lock;
             lock.lock();
             try {
+                // 获得next和nextItem
                 next = firstNode();
                 nextItem = (next == null) ? null : next.item;
             } finally {
@@ -1130,8 +1138,7 @@ public class LinkedBlockingDeque<E>
         }
 
         /**
-         * Returns the successor node of the given non-null, but
-         * possibly previously deleted, node.
+         * 下一个节点
          */
         private Node<E> succ(Node<E> n) {
             // Chains of deleted nodes ending in null or self-links
@@ -1142,7 +1149,7 @@ public class LinkedBlockingDeque<E>
                     return null;
                 else if (s.item != null)
                     return s;
-                else if (s == n)
+                else if (s == n)  // 表示该节点已经被删除
                     return firstNode();
                 else
                     n = s;
@@ -1150,7 +1157,7 @@ public class LinkedBlockingDeque<E>
         }
 
         /**
-         * Advances next.
+         * 计算出next和nextItem
          */
         void advance() {
             final ReentrantLock lock = LinkedBlockingDeque.this.lock;
@@ -1171,9 +1178,9 @@ public class LinkedBlockingDeque<E>
         public E next() {
             if (next == null)
                 throw new NoSuchElementException();
-            lastRet = next;
+            lastRet = next; // 更新lastRet
             E x = nextItem;
-            advance();
+            advance(); // 获得next和nextItem
             return x;
         }
 
