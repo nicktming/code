@@ -2,20 +2,28 @@ package com.arrayblockingqueue;
 
 public class Test01 {
 
-    static ArrayBlockingQueue<String> arrayBlockingQueue = new ArrayBlockingQueue(10);
+    static ArrayBlockingQueue<String> abq = new ArrayBlockingQueue(10);
 
     public static void main(String[] args) {
-        Thread consumer = new Consumer("consumer01");
-        Thread producer = new Producer("producer01");
-        producer.start();
-        consumer.start();
+        Consumer consumer01 = new Consumer("consumer01");
+        Consumer consumer02 = new Consumer("consumer02");
+        Producer producer01 = new Producer("producer01");
+        Producer producer02 = new Producer("producer02");
+        Producer producer03 = new Producer("producer03");
+        consumer01.start();
+        consumer02.start();
+        producer01.start();
+        producer02.start();
+        producer03.start();
     }
 
     static class Consumer extends Thread {
         Consumer(String name) {super(name);}
         public void run() {
             try {
-                consumer();
+                while (true) {
+                    System.out.println(Thread.currentThread().getName() + " gets " + abq.take());
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -26,23 +34,12 @@ public class Test01 {
         Producer(String name) {super(name);}
         public void run() {
             try {
-                producer();
+                for (int i = 0; i <3; i++) {
+                    abq.put(Thread.currentThread().getName() + "-" + i);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-        }
-    }
-
-    private static void producer() throws InterruptedException {
-        for (int i = 0; i < 100; i++) {
-            arrayBlockingQueue.put(Thread.currentThread().getName() + "-" + i);
-        }
-        System.out.println("producer finished!");
-    }
-
-    private static void consumer() throws InterruptedException {
-        while(true) {
-            System.out.println(Thread.currentThread().getName() + " gets " + arrayBlockingQueue.take());
         }
     }
 }

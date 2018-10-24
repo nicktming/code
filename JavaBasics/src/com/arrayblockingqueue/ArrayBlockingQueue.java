@@ -80,6 +80,12 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     /**
      * Inserts element at current put position, advances, and signals.
      * Call only when holding lock.
+     *
+     * 加入一个元素并且给因为队列空而休眠等待的线程信号
+     * 调用该方法有两个条件:
+     * 1. 获得锁
+     * 2. items[putIndex] = null
+     *
      */
     private void enqueue(E x) {
         // assert lock.getHoldCount() == 1;
@@ -93,6 +99,10 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     }
 
     /**
+     * 删除一个元素并且给因为队列满而休眠等待的线程信号
+     * 调用该方法有两个条件:
+     * 1. 获得锁
+     * 2. items[takeIndex] != null
      * Extracts element at current take position, advances, and signals.
      * Call only when holding lock.
      */
@@ -106,6 +116,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         if (++takeIndex == items.length)
             takeIndex = 0;
         count--;
+        // 关于itrs 是跟遍历有关 不会影响整体逻辑
         if (itrs != null)
             itrs.elementDequeued();
         notFull.signal();
@@ -133,6 +144,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
             // an "interior" remove
 
             // slide over all others up through putIndex.
+            // 将removeIndex到putIndex这段区域的元素集体往前移一个单位
             final int putIndex = this.putIndex;
             for (int i = removeIndex;;) {
                 int next = i + 1;
@@ -198,6 +210,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         this(capacity, fair);
 
         final ReentrantLock lock = this.lock;
+        // 因为items不是volatile 需要保证可见性
         lock.lock(); // Lock only for visibility, not mutual exclusion
         try {
             int i = 0;
@@ -255,9 +268,10 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     }
 
     /**
-     *
      * 向队列尾部插入该元素 如果队列已满没有空间则等待
      * 注意:该方法响应中断
+     * 有一种情况下会加入失败:
+     * 1. 在获得锁或者因为队列满而导致休眠等待的过程中该线程被其他线程中断
      *
      * @throws InterruptedException {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
@@ -317,6 +331,8 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     /**
      * 如果当前队列元素为0,则等待
      * 返回一个从队列中取出来的元素
+     * 有一种情况下会消费失败:
+     * 1. 在获得锁或者因为队列空而导致休眠等待的过程中该线程被其他线程中断
      * @return
      * @throws InterruptedException
      */
