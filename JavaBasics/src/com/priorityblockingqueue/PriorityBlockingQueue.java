@@ -1,5 +1,8 @@
 package com.priorityblockingqueue;
 
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -1056,7 +1059,12 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
     private static final long allocationSpinLockOffset;
     static {
         try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
+            //UNSAFE = sun.misc.Unsafe.getUnsafe();
+
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            UNSAFE = (Unsafe) field.get(null);
+
             Class<?> k = PriorityBlockingQueue.class;
             allocationSpinLockOffset = UNSAFE.objectFieldOffset
                     (k.getDeclaredField("allocationSpinLock"));
