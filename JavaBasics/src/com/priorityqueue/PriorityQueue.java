@@ -470,34 +470,23 @@ public class PriorityQueue<E> extends AbstractQueue<E>
 
     private final class Itr implements Iterator<E> {
         /**
-         * Index (into queue array) of element to be returned by
-         * subsequent call to next.
+         * 当前遍历到元素下标
          */
         private int cursor = 0;
 
         /**
-         * Index of element returned by most recent call to next,
-         * unless that element came from the forgetMeNot list.
-         * Set to -1 if element is deleted by a call to remove.
+         * 上个被遍历的元素下标
          */
         private int lastRet = -1;
 
         /**
-         * A queue of elements that were moved from the unvisited portion of
-         * the heap into the visited portion as a result of "unlucky" element
-         * removals during the iteration.  (Unlucky element removals are those
-         * that require a siftup instead of a siftdown.)  We must visit all of
-         * the elements in this list to complete the iteration.  We do this
-         * after we've completed the "normal" iteration.
-         *
-         * We expect that most iterations, even those involving removals,
-         * will not need to store elements in this field.
+         * 存放因为删除元素而导致被替换到已经被遍历过的下标所在的位置上
+         * 放到正常遍历结束后再取这里所有的元素
          */
         private ArrayDeque<E> forgetMeNot = null;
 
         /**
-         * Element returned by the most recent call to next iff that
-         * element was drawn from the forgetMeNot list.
+         * 在遍历forgetMeNot时上个遍历元素
          */
         private E lastRetElt = null;
 
@@ -517,9 +506,10 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         public E next() {
             if (expectedModCount != modCount)
                 throw new ConcurrentModificationException();
-            if (cursor < size)
+            if (cursor < size) //正常遍历情况
                 return (E) queue[lastRet = cursor++];
-            if (forgetMeNot != null) {
+            if (forgetMeNot != null) { // 从forgetMeNot中取元素
+                //System.out.println("in forgetMeNot != null next()");
                 lastRet = -1;
                 lastRetElt = forgetMeNot.poll();
                 if (lastRetElt != null)
@@ -531,7 +521,11 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         public void remove() {
             if (expectedModCount != modCount)
                 throw new ConcurrentModificationException();
-            if (lastRet != -1) {
+            if (lastRet != -1) { // 正常遍历过程中删除元素
+                /**
+                 * moved为null 表明是不会影响遍历情况
+                 * 否则需要加入到ArrayDeque留作后续遍历 因为该元素被调整到之前已经被遍历的下标位置了
+                 */
                 E moved = PriorityQueue.this.removeAt(lastRet);
                 lastRet = -1;
                 if (moved == null)
@@ -539,9 +533,10 @@ public class PriorityQueue<E> extends AbstractQueue<E>
                 else {
                     if (forgetMeNot == null)
                         forgetMeNot = new ArrayDeque<>();
+                    //System.out.println("forgetMeNot add moved:" + moved);
                     forgetMeNot.add(moved);
                 }
-            } else if (lastRetElt != null) {
+            } else if (lastRetElt != null) { // 遍历ArrayDeque过程中删除元素
                 PriorityQueue.this.removeEq(lastRetElt);
                 lastRetElt = null;
             } else {
@@ -591,6 +586,11 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * that was previously at the end of the list and is now at some
      * position before i. This fact is used by iterator.remove so as to
      * avoid missing traversing elements.
+     *
+     * 返回值：(遍历的时候会用到)
+     * 如果往下调整 则返回null
+     * 如果往上调整 则需要返回被调整的moved值
+     *
      */
     @SuppressWarnings("unchecked")
     private E removeAt(int i) {
