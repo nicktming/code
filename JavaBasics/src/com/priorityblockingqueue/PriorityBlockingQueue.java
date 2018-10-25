@@ -103,49 +103,32 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
     private static final int DEFAULT_INITIAL_CAPACITY = 11;
 
     /**
-     * The maximum size of array to allocate.
-     * Some VMs reserve some header words in an array.
-     * Attempts to allocate larger arrays may result in
-     * OutOfMemoryError: Requested array size exceeds VM limit
      *
      * 数组可申请的最大空间
      */
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
-     * Priority queue represented as a balanced binary heap: the two
-     * children of queue[n] are queue[2*n+1] and queue[2*(n+1)].  The
-     * priority queue is ordered by comparator, or by the elements'
-     * natural ordering, if comparator is null: For each node n in the
-     * heap and each descendant d of n, n <= d.  The element with the
-     * lowest value is in queue[0], assuming the queue is nonempty.
-     *
      * 存储数据的数组
      */
     private transient Object[] queue;
 
     /**
-     * The number of elements in the priority queue.
      * 当前队列的元素个数
      */
     private transient int size;
 
     /**
-     * The comparator, or null if priority queue uses elements'
-     * natural ordering.
-     *
      * 优先队列的比较器
      */
     private transient Comparator<? super E> comparator;
 
     /**
-     * Lock used for all public operations
      * 重入锁
      */
     private final ReentrantLock lock;
 
     /**
-     * Condition for blocking when empty
      * 当队列为空时需要用到
      */
     private final Condition notEmpty;
