@@ -1,6 +1,8 @@
 package com.futuretask;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class FutureTaskTest {
     private final FutureTask<ProductInfo> future = new FutureTask<ProductInfo>(
