@@ -1,5 +1,6 @@
 package com.futuretask;
 
+
 import java.util.HashMap;
 import java.util.concurrent.*;
 
@@ -13,12 +14,7 @@ public class FutureTest {
         Future<HashMap<String, String>> future = threadPool.submit(new Callable<HashMap<String, String>>() {
             @Override
             public HashMap<String, String> call() throws Exception {
-                System.out.println("asyn task starts.");
-                Thread.sleep(2000);
-                System.out.println("asyn task ends and return result.");
-                return new HashMap<String, String>(){
-                    {this.put("futureKey", "futureresult");}
-                };
+                return null;
             }
         });
 

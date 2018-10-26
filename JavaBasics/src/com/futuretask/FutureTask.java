@@ -3,10 +3,7 @@ package com.futuretask;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -121,12 +118,12 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * {@code Future<?> f = new FutureTask<Void>(runnable, null)}
      * @throws NullPointerException if the runnable is null
      */
-    /*
+
     public FutureTask(Runnable runnable, V result) {
         this.callable = Executors.callable(runnable, result);
         this.state = NEW;       // ensure visibility of callable
     }
-    */
+
 
     public boolean isCancelled() {
         return state >= CANCELLED;
