@@ -14,7 +14,12 @@ public class FutureTest {
         Future<HashMap<String, String>> future = threadPool.submit(new Callable<HashMap<String, String>>() {
             @Override
             public HashMap<String, String> call() throws Exception {
-                return null;
+                System.out.println(Thread.currentThread().getName() + " starts and waits");
+                Thread.sleep(5000);
+                System.out.println(Thread.currentThread().getName() + " finishes");
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put("futureKey", "myanswer");
+                return map;
             }
         });
 

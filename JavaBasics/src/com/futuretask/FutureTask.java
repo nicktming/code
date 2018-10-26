@@ -225,6 +225,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     public void run() {
+        System.out.println("-------in FutureTask run()--------");
         if (state != NEW ||
                 !UNSAFE.compareAndSwapObject(this, runnerOffset,
                         null, Thread.currentThread()))

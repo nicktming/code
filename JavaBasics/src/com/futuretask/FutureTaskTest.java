@@ -1,5 +1,6 @@
 package com.futuretask;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,7 +28,7 @@ public class FutureTaskTest {
     public ProductInfo get() throws InterruptedException, ExecutionException,
             TimeoutException {
         try{
-            return future.get(10, TimeUnit.SECONDS);
+            return future.get(1, TimeUnit.SECONDS);
         } catch(TimeoutException e) {
             //future.cancel(true); //取消任务
             System.err.println("火速返回，失败！");
