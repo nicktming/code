@@ -22,8 +22,6 @@ public class FutureTaskTest03 {
 
         thread.interrupt();
 
-        //futureTask.cancel(true);
-
         System.out.println(Thread.currentThread().getName() + "->" + futureTask.get() + "<-");
     }
 }
