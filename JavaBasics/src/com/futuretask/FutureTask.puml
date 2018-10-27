@@ -1,0 +1,33 @@
+@startuml
+
+class FutureTask<V> {
+
+}
+
+interface RunnableFuture<V> {
+    void run();
+}
+
+interface Runnable {
+    public abstract void run();
+}
+
+interface Future<V> {
+    boolean cancel(boolean mayInterruptIfRunning);
+    boolean isCancelled();
+    boolean isDone();
+    V get() throws InterruptedException, ExecutionException;
+    V get(long timeout, TimeUnit unit)
+            throws InterruptedException, ExecutionException, TimeoutException;
+}
+
+interface Callable<V> {
+    V call() throws Exception;
+}
+
+RunnableFuture <|.. FutureTask
+Runnable <|-- RunnableFuture
+Future <|-- RunnableFuture
+Callable <-- FutureTask
+
+@enduml

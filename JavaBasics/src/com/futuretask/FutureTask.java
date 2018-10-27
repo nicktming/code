@@ -96,6 +96,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * Creates a {@code FutureTask} that will, upon running, execute the
      * given {@code Callable}.
      *
+     * 构造函数 callable中的call方法会被最终执行
+     * 初始状态是NEW
+     *
      * @param  callable the callable task
      * @throws NullPointerException if the callable is null
      */
@@ -193,6 +196,9 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * Sets the result of this future to the given value unless
      * this future has already been set or has been cancelled.
      *
+     * 在callable的call方法被正确执行后会调用该方法设置outcome和state
+     * 此时state流程为 NEW->COMPLETING->NORMAL
+     *
      * <p>This method is invoked internally by the {@link #run} method
      * upon successful completion of the computation.
      *
@@ -224,25 +230,37 @@ public class FutureTask<V> implements RunnableFuture<V> {
         }
     }
 
+    /**
+     *  最终运行的方法
+     */
     public void run() {
-        System.out.println("-------in FutureTask run()--------");
+        // 如果状态值不为NEW 表示已经有线程运行过该task了 因此返回
+        // 如果状态值为NEW 则设置RUNNER为当前线程 如果设置不成功也返回
         if (state != NEW ||
                 !UNSAFE.compareAndSwapObject(this, runnerOffset,
                         null, Thread.currentThread()))
             return;
+        // 进入到这里 表明执行该task的是当前线程已经被设置到RUNNER变量中并且状态值state为NEW
         try {
             Callable<V> c = callable;
             if (c != null && state == NEW) {
+                /**
+                 * result 接收callable的返回值
+                 * ran    表示callable方法是否正确执行完成
+                 */
                 V result;
                 boolean ran;
                 try {
+                    // 调用callable的方法call 并把结果放到result中
                     result = c.call();
                     ran = true;
                 } catch (Throwable ex) {
+                    // call()方法出现异常执行的操作
                     result = null;
                     ran = false;
                     setException(ex);
                 }
+                // call()正确执行完执行的操作
                 if (ran)
                     set(result);
             }

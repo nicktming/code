@@ -21,8 +21,5 @@ public class FutureTaskTest02 {
         System.out.println(Thread.currentThread().getName() + " finished to start thread.");
 
         System.out.println(Thread.currentThread().getName() + "->" + futureTask.get());
-
-
-
     }
 }
