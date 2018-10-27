@@ -137,6 +137,19 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     public boolean cancel(boolean mayInterruptIfRunning) {
+        /**
+         *  相当于 state != NEW || !UNSAFE.compareAndSwapInt(this, stateOffset, NEW,
+         *                         mayInterruptIfRunning ? INTERRUPTING : CANCELLED)
+         *  如果状态值不是NEW 则直接返回 (只有在状态值是NEW的情况下才进行取消操作)
+         *  如果状态值是NEW并且CAS操作失败 会直接返回false
+         *  CAS操作成功会继续执行后续的操作, CAS分两种:
+         *  mayINterruptIfRunning = true:
+         *      状态值 NEW -> INTERRUPTING -> INTERRUPTED (期间调用runner.interrupt()方法中断执行call方法的线程)
+         *  mayINterruptIfRunning = false:
+         *      状态值 NEW -> CANCELLED
+         *
+         *  最后都会调用finishCompletion();
+         */
         if (!(state == NEW &&
                 UNSAFE.compareAndSwapInt(this, stateOffset, NEW,
                         mayInterruptIfRunning ? INTERRUPTING : CANCELLED)))
@@ -205,8 +218,10 @@ public class FutureTask<V> implements RunnableFuture<V> {
      * @param v the value
      */
     protected void set(V v) {
+        System.out.println(" set after state:" + state);
         if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) {
             outcome = v;
+            System.out.println(" set before state:" + state);
             UNSAFE.putOrderedInt(this, stateOffset, NORMAL); // final state
             finishCompletion();
         }
@@ -219,6 +234,8 @@ public class FutureTask<V> implements RunnableFuture<V> {
      *
      * <p>This method is invoked internally by the {@link #run} method
      * upon failure of the computation.
+     *
+     * NEW -> COMPLETING -> EXCEPTIONAL
      *
      * @param t the cause of failure
      */
@@ -270,6 +287,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
             runner = null;
             // state must be re-read after nulling runner to prevent
             // leaked interrupts
+            System.out.println("run state:" + state);
             int s = state;
             if (s >= INTERRUPTING)
                 handlePossibleCancellationInterrupt(s);
@@ -390,12 +408,14 @@ public class FutureTask<V> implements RunnableFuture<V> {
         WaitNode q = null;
         boolean queued = false;
         for (;;) {
+            // 如果线程已经被中断 则删除该节点并抛出InterruptedException
             if (Thread.interrupted()) {
                 removeWaiter(q);
                 throw new InterruptedException();
             }
 
             int s = state;
+            // s>COMPLETING 表明task已经完成
             if (s > COMPLETING) {
                 if (q != null)
                     q.thread = null;
