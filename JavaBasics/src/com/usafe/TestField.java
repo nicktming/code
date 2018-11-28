@@ -1,7 +1,6 @@
 package com.usafe;
 
 import sun.misc.Unsafe;
-
 import java.lang.reflect.Field;
 
 public class TestField {
