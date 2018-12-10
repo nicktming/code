@@ -1007,6 +1007,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         this.acc = System.getSecurityManager() == null ?
                 null :
                 AccessController.getContext();
+
+        System.out.println("acc:" + acc);
+
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
         this.workQueue = workQueue;
