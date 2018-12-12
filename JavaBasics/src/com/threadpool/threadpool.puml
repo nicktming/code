@@ -1,0 +1,17 @@
+@startuml
+
+class Executors {
+}
+
+interface ExecutorService extends Executor {
+}
+
+abstract class AbstractExecutorService implements ExecutorService {
+}
+
+class ThreadPoolExecutor extends AbstractExecutorService {
+}
+
+Executors ..> ExecutorService
+
+@enduml
