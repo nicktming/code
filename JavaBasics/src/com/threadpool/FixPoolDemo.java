@@ -24,6 +24,4 @@ public class FixPoolDemo {
         fixPool.shutdown();
     }
 
-
-
 }
