@@ -1008,8 +1008,6 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                 null :
                 AccessController.getContext();
 
-        System.out.println("acc:" + acc);
-
         this.corePoolSize = corePoolSize;
         this.maximumPoolSize = maximumPoolSize;
         this.workQueue = workQueue;
@@ -1033,6 +1031,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @throws NullPointerException if {@code command} is null
      */
     public void execute(Runnable command) {
+
+        // 如果任务为null, 返回空指针异常
         if (command == null)
             throw new NullPointerException();
         /*
@@ -1043,6 +1043,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
          * task.  The call to addWorker atomically checks runState and
          * workerCount, and so prevents false alarms that would add
          * threads when it shouldn't, by returning false.
+         *
+         *  如果线程个数小于核心线程池的个数,尝试启动一个新的线程去执行
          *
          * 2. If a task can be successfully queued, then we still need
          * to double-check whether we should have added a thread
